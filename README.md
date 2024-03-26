@@ -18,15 +18,22 @@ Your financial expense manager. Wallet is a simple and interactive tracker that 
 6. View All Expenses: A list of all the entered expenses per category.
 
 #### Usage
+Menu
+Upon launch, the user is introduced to the application and presented with a main menu.
+Selecting an option from the menu—using a numbered list—will perform the respective task.
+Tasks
 1. Run the program by executing <kbd>python project.py</kbd>
 3. Install the required dependencies using pip <kbd>pip install -r requirements.txt</kbd>
 4. Test the program python script test_project.py with pytest by running <kbd>pytest test_project.py</kbd>
 5. Note: For the option 5. Send expense report to email
-    "from confidential import password " is a module where the password of the email used is being stored
+    "from confidential import password " is a module where the password of the email used is stored
     to be able to use this option you have to replace it with yours. You also have to use/create your own email
     that is gonna be used to send email. When running this code you are gonna face an ImportError if these conditions aren't being met but you can use the program by commenting that line     out. All the other options will be available to you except option 5.
 6. Please do not forget to save expenses after every change e.g. after deleting an expense or adding an expense. This helps with making sure the CSV file is up-to-date.
 7. Clone the repository: git clone https://github.com/ErinAurelie/Wallet.git
+
+#### Documentation
+All functions are covered with accompanying docstrings specifying goals, input arguments, and expected output.
 
 
 
@@ -36,4 +43,6 @@ For any inquiries, please contact:
 
 Erin Aurélie (erinaurelieessama@gmail.com)
 
+
+Enjoy using Wallet and managing your financial expenses.
 
