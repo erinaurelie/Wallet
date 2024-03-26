@@ -15,11 +15,6 @@ import socket
 import validators
 import art
 
-#requirement.txt
-# pip install tabulate
-# pip install fpdf
-# pip install validators
-# pip install art
 
 class Expense:
     """
