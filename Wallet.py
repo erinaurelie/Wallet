@@ -14,6 +14,7 @@ import fpdf
 import socket
 import validators
 import art
+import re
 
 
 class Expense:
@@ -72,7 +73,7 @@ def main() -> None:
             to_email = input("Enter recipient email address: ").strip()
             while True:
                 try:
-                    if validators.email(to_email.lower()):
+                    if validators.email(to_email.lower()) and re.search(r"@gmail.com$", to_email):
                         break
                     else:
                         print("Invalid Email Address. Please Try Again.")
