@@ -239,7 +239,7 @@ def save_expenses(expenses, file_path="expense.csv") -> None:
         writer = csv.writer(csvfile)
         writer.writerow(["Expense Name", "Amount", "Category"])
         for expense in expenses:
-            writer.writerow([expense.name, expense.amount, expense.category])
+            writer.writerow([expense.name.capitalize(), expense.amount, expense.category])
     time.sleep(2)
     print("Expenses saved successfully.")
 
@@ -359,12 +359,12 @@ def delete_expense(expenses) -> None:
 
     deleted = False
     for expense in expenses[:]:
-        if expense.name == name_to_delete:
+        if expense.name.lower() == name_to_delete:
             expenses.remove(expense)
             deleted = True
 
     if deleted:
-        print(f"'{name_to_delete}' deleted successfully.")
+        print(f"'{name_to_delete.capitalize()}' deleted successfully.")
     else:
         print(f"No expense with the name '{name_to_delete}' found.")
 
