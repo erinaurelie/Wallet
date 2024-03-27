@@ -428,7 +428,7 @@ def send_email(to_email, subject, body, attachment_path, from_email, email_passw
         )
         msg.attach(part)
 
-        with smtplib.SMTP(smtp_server, smtp_port) as server:
+        with smtplib.SMTP(smtp_server, smtp_port, timeout=10) as server:
             server.starttls()
             server.login(from_email, email_password)
             server.send_message(msg)
@@ -440,8 +440,10 @@ def send_email(to_email, subject, body, attachment_path, from_email, email_passw
         print(
             f"Failed to connect to the SMTP server. Please check your internet connection."
         )
-    except smtplib.SMTPException as e:
-        print(f"An error occurred while sending email: {e}")
+    except (smtplib.SMTPException, socket.timeout) as e:
+        print(
+            f"Error: Connection to the SMTP server timed out. Please check your internet connection and SMTP server availability."
+        )
 
 
 def summarize_and_send_expense(budget, from_email, email_password, attachment_path, to_email,
