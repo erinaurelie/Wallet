@@ -1,20 +1,8 @@
 import csv
-import datetime
-import time
-import smtplib  # Simple Mail Transfer Protocol
-import os
-from email.mime.multipart import MIMEMultipart
-from email.mime.base import MIMEBase
-from email.mime.text import MIMEText
-from email import encoders
 from tabulate import tabulate
-from confidential import password
-from fpdf import FPDF, XPos, YPos
-import fpdf
-import socket
-import validators
 import art
-import re
+import time
+import pyttsx3
 
 
 class Expense:
@@ -46,6 +34,7 @@ def main() -> None:
     This function executes the main logic of the script or program.
     """
     print(art.text2art('WELCOME TO WALLET!'))
+    text_to_speech()
     budget = get_budget()
     expenses = []
 
@@ -69,37 +58,8 @@ def main() -> None:
             print("===============================\nDELETING AN EXPENSE\n===============================")
             delete_expense(expenses)
         elif option == "5":
-            print("===============================\nSENDING EXPENSE REPORT TO EMAIL\n===============================")
-            to_email = input("Enter recipient email address: ").strip()
-            while True:
-                try:
-                    if validators.email(to_email.lower()) and re.search(r"@gmail.com$", to_email):
-                        break
-                    else:
-                        print("Invalid Email Address. Please Try Again.")
-                except validators.ValidationError as e:
-                    print(e.message)
-                to_email = input("Enter recipient email address: ").strip()
-            subject = "Expense Summary"
-            body = "Please find attached the summary of expenses."
-            attachment_path = "expense_summary.pdf"
-            from_email = "walletapp.contact@gmail.com"
-            email_password = password
-            smtp_server = "smtp.gmail.com"
-            smtp_port = 587
-            summarize_and_send_expense(
-                budget,
-                from_email,
-                email_password,
-                to_email,
-                attachment_path,
-                smtp_server,
-                smtp_port,
-            )
-            print("_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-__-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-")
-        elif option == "6":
             view_all_expenses(file_path="expense.csv")
-        elif option == "7":
+        elif option == "6":
             print("Exiting...")
             time.sleep(2)
             print()
@@ -118,35 +78,17 @@ def print_menu() -> None:
     print("2. Save Expenses")
     print("3. Summarize Expenses")
     print("4. Delete an Expense")
-    print("5. Send expense report to email")
-    print("6. View Expenses")
-    print("7. Exit")
+    print("5. View Expenses")
+    print("6. Exit")
 
 
-def generate_pdf_summary(summary, pdf_file_path) -> None:
+def text_to_speech() -> None:
     """
-    Generate a PDF summary with the provided summary content and save it to the specified file path.
-
-    :param summary (str): The content of the summary to be included in the PDF.
-    :param pdf_file_path (str): The file path where the generated PDF will be saved
-    return: None
+    This function converts the given text into speech using the pyttsx3 library.
     """
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("helvetica", size=12)
-
-    summary_bytes = summary.encode('latin-1', 'ignore').decode('latin-1')
-
-    # Add text to the PDF
-    pdf.cell(0, 10, txt=f"Generated on {datetime.datetime.now().strftime('%Y-%m-%d')}", new_x=XPos.RIGHT, new_y=YPos.TOP)
-    pdf.ln(10)
-    pdf.cell(200, 10, txt="Here's the breakdown of your expenses for the current month:", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
-    pdf.ln(10)
-    pdf.multi_cell(0, 10, txt=summary_bytes)
-
-    pdf.output(pdf_file_path)
-
-
+    engine = pyttsx3.init()
+    engine.say("WELCOME TO WALLET!")
+    engine.runAndWait()
 
 
 def get_budget() -> float:
@@ -319,14 +261,13 @@ def generate_summary_text(total_spent, amount_by_category, budget, budget_left) 
     return summary
 
 
-def summarize_expenses(budget, file_path="expense.csv", print_summary=True, print_pdf=False) -> str:
+def summarize_expenses(budget, file_path="expense.csv", print_summary=True) -> str:
     """
     Summarize expenses based on a budget and an optional CSV file path.
 
     :param: budget (float): The allocated budget for expenses.
     :param: file_path (str, optional): The path to the CSV file containing the expenses. Defaults to "expense.csv".
     :param: print_summary (bool, optional): Whether to print the summary text to the console. Defaults to True.
-    :param: print_pdf (bool, optional): Whether to generate a PDF summary. Defaults to False.
     :return: The summary text if `print_summary` is False, otherwise an empty string.
     :rtype: str
 
@@ -337,10 +278,6 @@ def summarize_expenses(budget, file_path="expense.csv", print_summary=True, prin
 
     if print_summary:
         print(summary)
-
-    if print_pdf:
-        pdf_file_path = "report.pdf"
-        generate_pdf_summary(summary, pdf_file_path)
 
     return summary if not print_summary else ""
 
@@ -392,100 +329,6 @@ def view_all_expenses(file_path="expense.csv") -> None:
     else:
         print("No expenses found.")
 
-
-def send_email(to_email, subject, body, attachment_path, from_email, email_password, 
-               smtp_server="smtp.gmail.com", smtp_port=587) -> None:
-    """
-    Sends an email with an attachment using the SMTP protocol.
-
-    :param: to_email (str): The email address of the recipient.
-    :param: subject (str): The subject of the email.
-    :param: body (str): The body or content of the email.
-    :param: attachment_path (str): The file path to the attachment.
-    :param: from_email (str): The email address of the sender.
-    :param: email_password (str): The password for the sender's email account.
-    :param: smtp_server (str, optional): The SMTP server address. Defaults to "smtp.gmail.com".
-    :param: smtp_port (int, optional): The SMTP server port. Defaults to 587.
-
-    """
-    try:
-        with open(attachment_path, "rb") as attachment_file:
-            attachment_data = attachment_file.read()
-
-        msg = MIMEMultipart()
-        msg["From"] = from_email
-        msg["To"] = to_email
-        msg["Subject"] = subject
-
-        msg.attach(MIMEText(body, "plain"))
-
-        part = MIMEBase("application", "octet-stream")
-        part.set_payload(attachment_data)
-        encoders.encode_base64(part)
-        part.add_header(
-            "Content-Disposition",
-            f"attachment; filename={os.path.basename(attachment_path)}",
-        )
-        msg.attach(part)
-
-        with smtplib.SMTP(smtp_server, smtp_port, timeout=30) as server:
-            server.starttls()
-            server.login(from_email, email_password)
-            server.send_message(msg)
-        print("Email sent successfully.")
-
-    except FileNotFoundError:
-        print(f"Attachment file '{attachment_path}' not found.")
-    except (smtplib.SMTPConnectError, socket.gaierror) as e:
-        print(
-            f"Failed to connect to the SMTP server. Please check your internet connection."
-        )
-    except (smtplib.SMTPException, socket.timeout) as e:
-        print(
-            f"Failed to connect to the SMTP server. Please check your internet connection and try again."
-        )
-
-
-def summarize_and_send_expense(budget, from_email, email_password, attachment_path, to_email,
-                               smtp_server="smtp_server", smtp_port=587, file_path="expense.csv") -> str:
-    
-    """
-    Summarize expenses, generate a PDF summary, and send it via email.
-
-    :param budget (float): The budget amount.
-    :param from_email (str): The email address of the sender.
-    :param email_password (str): The password for the sender's email account.
-    :param attachment_path (str): The file path to the attachment.
-    :param to_email: (str) The email address of the recipient.
-    :param smtp_server (str, optional): The SMTP server address. Defaults to "smtp_server".
-    :param smtp_port (int, optional): The SMTP server port. Defaults to 587.
-    :param file_path (str, optional): The path to the CSV file containing the expenses. Defaults to "expense.csv".
-
-     :return: The summary of expenses.
-     rtype: str
-
-    """
-
-    summary = summarize_expenses(
-        budget, file_path=file_path, print_summary=False, print_pdf=False
-    )
-    amount_by_category = summary[1] if isinstance(summary, tuple) and len(summary) > 1 else {}
-    summary_file_path = "expense_summary.pdf"
-    generate_pdf_summary(summary, summary_file_path)
-
-    subject = "Expense Summary"
-    body = "Please find attached the summary of expenses."
-    send_email(
-        to_email,
-        subject,
-        body,
-        summary_file_path,
-        from_email,
-        email_password,
-        smtp_server,
-        smtp_port,
-    )
-    return summary
 
 
 if __name__ == "__main__":
