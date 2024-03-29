@@ -2,7 +2,7 @@
 
 # Welcome to Wallet - Financial Expense Manager
 
-#### Video Demo:  <URL HERE>
+#### Video Demo: https://youtu.be/YGp3fwi-bPU
 
 #### Description:
 
